@@ -4,11 +4,13 @@ import { GetVendor } from '../types/types';
 
 config();
 
+const NODE_BACKEND_DEV = "https://wyvatecustomerappbackendinnode-thdu.onrender.com"
+
 export async function getVendor({ latitude, longitude }): Promise<GetVendor> {
   try {
     console.log(longitude, latitude);
 
-    const apiUrl = `${process.env.NODE_BACKEND_DEV}/vendor/vendorexplore?latitude=${latitude}&longitude=${longitude}&day=${new Date().getDay()}`;
+    const apiUrl = `${NODE_BACKEND_DEV}/vendor/vendorexplore?latitude=${latitude}&longitude=${longitude}&day=${new Date().getDay()}`;
     console.log(`🌐 Fetching from: ${apiUrl}`);
 
     const response = await axios.get(apiUrl);
