@@ -18,6 +18,10 @@ registerTools(server);
 // ✅ SSE and Message handling
 const transports = {};
 
+app.get("/", (req, res) => {
+    res.json("Server is running");
+})
+
 app.get('/sse', async (req, res) => {
   console.log("Client connected to SSE.");
   const transport = new SSEServerTransport('/messages', res);
