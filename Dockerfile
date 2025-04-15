@@ -8,11 +8,10 @@ COPY ecosystem.config.js ./
 
 RUN npm install
 
-COPY ./src ./src
-
 RUN npm install -g typescript
 RUN npm install -g pm2
 
+COPY ./src ./src
 
 RUN npm run build
 

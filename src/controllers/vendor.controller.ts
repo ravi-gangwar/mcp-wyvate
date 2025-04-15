@@ -31,7 +31,7 @@ export async function getVendor({ latitude, longitude }): Promise<GetVendor> {
     const vendorListText = vendors
       .slice(0, 5) // Limiting to first 5 for brevity
       .map((v, i) =>
-        `${i + 1}. ${v.name} - Avg Prep Time: ${v.avg_preparing_time || "N/A"}`
+        `${v.name} - Avg Prep Time: ${v.avg_preparing_time || "N/A"}`
       )
       .join("\n");
 
@@ -39,7 +39,7 @@ export async function getVendor({ latitude, longitude }): Promise<GetVendor> {
       content: [
         {
           type: "text",
-          text: `📍 Vendors near you:\n${vendorListText}`,
+          text: `Your near by Vendors are ${vendorListText}`,
         },
       ],
     };
