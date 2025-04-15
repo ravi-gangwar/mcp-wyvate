@@ -18,6 +18,9 @@ const server = new mcp_js_1.McpServer({
 (0, tools_1.registerTools)(server);
 // ✅ SSE and Message handling
 const transports = {};
+app.get("/", (req, res) => {
+    res.json("Server is running");
+});
 app.get('/sse', async (req, res) => {
     console.log("Client connected to SSE.");
     const transport = new sse_js_1.SSEServerTransport('/messages', res);

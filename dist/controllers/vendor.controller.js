@@ -7,10 +7,11 @@ exports.getVendor = getVendor;
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = require("dotenv");
 (0, dotenv_1.config)();
+const NODE_BACKEND_DEV = "https://wyvatecustomerappbackendinnode-thdu.onrender.com";
 async function getVendor({ latitude, longitude }) {
     try {
         console.log(longitude, latitude);
-        const apiUrl = `${process.env.NODE_BACKEND_DEV}/vendor/vendorexplore?latitude=${latitude}&longitude=${longitude}&day=${new Date().getDay()}`;
+        const apiUrl = `${NODE_BACKEND_DEV}/vendor/vendorexplore?latitude=${latitude}&longitude=${longitude}&day=${new Date().getDay()}`;
         console.log(`🌐 Fetching from: ${apiUrl}`);
         const response = await axios_1.default.get(apiUrl);
         const vendors = response?.data?.Vendors || [];
