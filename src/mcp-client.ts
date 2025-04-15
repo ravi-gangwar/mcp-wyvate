@@ -66,6 +66,10 @@ app.post('/chat', async (req: Request, res: Response): Promise<any> => {
     userContext?: string | Record<string, any>;
   } = req.body;
 
+  console.log(userInput)
+  console.log(chatHistory)
+  console.log(userContext)
+
   if (!userInput) {
     return res.status(400).json({ error: "Missing userInput" });
   }
