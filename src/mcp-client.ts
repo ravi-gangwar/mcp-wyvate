@@ -55,24 +55,51 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // POST /chat
-app.post('/chat', async (req: Request, res: Response) : Promise<any> => {
-  const { userInput, chatHistory = [] }: { userInput: string; chatHistory: ChatEntry[] } = req.body;
+app.post('/chat', async (req: Request, res: Response): Promise<any> => {
+  const {
+    userInput,
+    chatHistory = [],
+    userContext,
+  }: {
+    userInput: string;
+    chatHistory: ChatEntry[];
+    userContext?: string | Record<string, any>;
+  } = req.body;
 
   if (!userInput) {
-    return res.status(400).json({ error: 'Missing userInput' });
+    return res.status(400).json({ error: "Missing userInput" });
   }
 
   await connectToMCP();
 
-  chatHistory.push({
-    role: 'user',
-    parts: [{ text: userInput, type: 'text' }],
-  });
+  // 🧠 Convert userContext to a Gemini-readable message
+  let contextMessage: ChatEntry | null = null;
+
+  if (userContext) {
+    const contextString =
+      typeof userContext === "string"
+        ? userContext
+        : JSON.stringify(userContext);
+
+    contextMessage = {
+      role: "user",
+      parts: [{ text: `#context ${contextString}`, type: "text" }],
+    };
+  }
+
+  const updatedChatHistory: ChatEntry[] = [
+    ...(contextMessage ? [contextMessage] : []),
+    ...chatHistory,
+    {
+      role: "user",
+      parts: [{ text: userInput, type: "text" }],
+    },
+  ];
 
   try {
     const response: GenerateContentResponse = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: chatHistory,
+      model: "gemini-2.0-flash",
+      contents: updatedChatHistory,
       config: {
         tools: [{ functionDeclarations: tools }],
       },
@@ -89,37 +116,21 @@ app.post('/chat', async (req: Request, res: Response) : Promise<any> => {
         arguments: toolCall.args,
       });
 
-      const toolText = toolResult?.content?.[0]?.text || 'No response from tool.';
-
-      const updatedHistory = [
-        ...chatHistory,
-        {
-          role: 'model',
-          parts: [{ text: `Calling tool ${toolCall.name}`, type: 'text' }],
-        },
-        {
-          role: 'user',
-          parts: [{ text: 'Tool result: ' + toolText, type: 'text' }],
-        },
-      ];
-
-      return res.json({ response: toolText, updatedChatHistory: updatedHistory });
+      const toolText = toolResult?.content?.[0]?.text || "No response from tool.";
+      return res.json({ response: toolText });
     } else {
-      const text = candidate?.text || '⚠️ No response generated.';
-      const fallbackHistory = [
-        ...chatHistory,
-        {
-          role: 'model',
-          parts: [{ text, type: 'text' }],
-        },
-      ];
-      return res.json({ response: text, updatedChatHistory: fallbackHistory });
+      const text = candidate?.text || "⚠️ No response generated.";
+      return res.json({ response: text });
     }
   } catch (err: any) {
-    console.error('Error during chat:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    console.error("Error during chat:", err);
+    return res.status(500).json({
+      error: "Internal server error",
+      details: err.message,
+    });
   }
 });
+
 
 // Start the server
 const PORT = 3000;
