@@ -88,11 +88,14 @@ app.post('/chat', async (req: Request, res: Response): Promise<any> => {
   }
 
   const updatedChatHistory: ChatEntry[] = [
-    ...(contextMessage ? [contextMessage] : []),
     ...chatHistory,
     {
       role: "user",
-      parts: [{ text: userInput, type: "text" }],
+      parts: [{ text: userInput, type: "text" }, 
+      {
+        type: "text",
+        text: JSON.stringify(contextMessage)
+      }],
     },
   ];
 
