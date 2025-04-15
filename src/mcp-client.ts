@@ -26,6 +26,7 @@ interface ChatEntry {
 let tools: any[] = [];
 let connected = false;
 
+
 // Connect MCP and fetch tools
 const connectToMCP = async () => {
   if (connected) return;
@@ -65,6 +66,10 @@ app.post('/chat', async (req: Request, res: Response): Promise<any> => {
     chatHistory: ChatEntry[];
     userContext?: string | Record<string, any>;
   } = req.body;
+
+  console.log(req.body);
+  console.log("---------------------------------------------------------------");
+  console.log(req.body.chatHistory)
 
   if (!userInput) return res.status(400).json({ error: 'Missing userInput' });
 

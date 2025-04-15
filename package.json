@@ -5,8 +5,8 @@
   "scripts": {
     "build": "tsc -b",
     "start": "node dist/index.js",
-    "client" : "node dist/mcp-client.js",
-    "dev": "nodemon --exec 'tsc -b && node dist/index.js'"
+    "dev": "nodemon --exec 'tsc -b && node dist/index.js' && ---exec ' node dist/mcp-client.js'",
+    "client" : "nodemon --exec 'tsc -b && node dist/mcp-client.js'"
   },
   "keywords": [],
   "author": "",

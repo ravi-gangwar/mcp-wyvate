@@ -31,9 +31,8 @@ export async function getVendor({ latitude, longitude }): Promise<GetVendor> {
     const vendorListText = vendors
       .slice(0, 5) // Limiting to first 5 for brevity
       .map((v, i) =>
-        `${v.name} - Avg Prep Time: ${v.avg_preparing_time || "N/A"}`
+        `${v.name} - average Preparing time is ${v.avg_preparing_time || "N/A"}`
       )
-      .join("\n");
 
     return {
       content: [

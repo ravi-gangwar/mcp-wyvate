@@ -41,4 +41,4 @@ app.post('/messages', async (req, res) => {
         res.status(400).send('No transport found for sessionId');
     }
 });
-app.listen(3000, () => console.log("🟢 MCP Server is running on port 3000"));
+app.listen(8080, () => console.log("🟢 MCP Server is running on port 8080"));

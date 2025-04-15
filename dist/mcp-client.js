@@ -22,7 +22,7 @@ const connectToMCP = async () => {
     if (connected)
         return;
     try {
-        await mcpClient.connect(new sse_js_1.SSEClientTransport(new URL('http://localhost:3000/sse')));
+        await mcpClient.connect(new sse_js_1.SSEClientTransport(new URL('http://localhost:8080/sse')));
         console.log('✅ Connected to MCP server');
         const result = await mcpClient.listTools();
         tools = result.tools.map((tool) => ({
@@ -46,64 +46,75 @@ app.use((0, cors_1.default)());
 app.use(body_parser_1.default.json());
 // POST /chat
 app.post('/chat', async (req, res) => {
-    const { userInput, chatHistory = [] } = req.body;
-    if (!userInput) {
+    const { userInput, chatHistory = [], userContext, } = req.body;
+    console.log(req.body);
+    console.log("---------------------------------------------------------------");
+    console.log(req.body.chatHistory);
+    if (!userInput)
         return res.status(400).json({ error: 'Missing userInput' });
-    }
     await connectToMCP();
-    chatHistory.push({
-        role: 'user',
-        parts: [{ text: userInput, type: 'text' }],
-    });
+    // Construct context message
+    let contextMessage = null;
+    if (userContext) {
+        const contextString = typeof userContext === 'string' ? userContext : JSON.stringify(userContext);
+        contextMessage = {
+            role: 'user',
+            parts: [{ text: `#context ${contextString}`, type: 'text' }],
+        };
+    }
+    const currentChatHistory = [
+        ...(contextMessage ? [contextMessage] : []),
+        ...chatHistory,
+        {
+            role: 'user',
+            parts: [{ text: userInput, type: 'text' }],
+        },
+    ];
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.0-flash',
-            contents: chatHistory,
-            config: {
-                tools: [{ functionDeclarations: tools }],
-            },
+            contents: currentChatHistory,
+            config: { tools: [{ functionDeclarations: tools }] },
         });
         const candidate = response?.candidates?.[0]?.content?.parts?.[0];
         if (candidate?.functionCall) {
             const toolCall = candidate.functionCall;
-            console.log(`🔧 Calling tool: ${toolCall.name}`);
             const toolResult = await mcpClient.callTool({
                 name: toolCall.name,
                 arguments: toolCall.args,
             });
             const toolText = toolResult?.content?.[0]?.text || 'No response from tool.';
-            const updatedHistory = [
-                ...chatHistory,
+            const updatedChatHistory = [
+                ...currentChatHistory,
                 {
                     role: 'model',
                     parts: [{ text: `Calling tool ${toolCall.name}`, type: 'text' }],
                 },
                 {
-                    role: 'user',
-                    parts: [{ text: 'Tool result: ' + toolText, type: 'text' }],
+                    role: 'model',
+                    parts: [{ text: 'Tool result : ' + toolText, type: 'text' }],
                 },
             ];
-            return res.json({ response: toolText, updatedChatHistory: updatedHistory });
+            return res.json({ response: toolText, updatedChatHistory });
         }
         else {
             const text = candidate?.text || '⚠️ No response generated.';
-            const fallbackHistory = [
-                ...chatHistory,
+            const updatedChatHistory = [
+                ...currentChatHistory,
                 {
                     role: 'model',
                     parts: [{ text, type: 'text' }],
                 },
             ];
-            return res.json({ response: text, updatedChatHistory: fallbackHistory });
+            return res.json({ response: text, updatedChatHistory });
         }
     }
     catch (err) {
-        console.error('Error during chat:', err);
         return res.status(500).json({ error: 'Internal server error', details: err.message });
     }
 });
 // Start the server
-const PORT = 3001;
+const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Client is listening on http://localhost:${PORT}`);
 });

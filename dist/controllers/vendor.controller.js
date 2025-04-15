@@ -28,13 +28,13 @@ async function getVendor({ latitude, longitude }) {
         // Format vendor info
         const vendorListText = vendors
             .slice(0, 5) // Limiting to first 5 for brevity
-            .map((v, i) => `${i + 1}. ${v.name} - Avg Prep Time: ${v.avg_preparing_time || "N/A"}`)
+            .map((v, i) => `${v.name} - Avg Prep Time: ${v.avg_preparing_time || "N/A"}`)
             .join("\n");
         return {
             content: [
                 {
                     type: "text",
-                    text: `📍 Vendors near you:\n${vendorListText}`,
+                    text: `Your near by Vendors are ${vendorListText}`,
                 },
             ],
         };
